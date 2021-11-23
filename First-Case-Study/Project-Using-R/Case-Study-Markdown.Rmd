@@ -1,0 +1,158 @@
+---
+title: "Divy Case Study"
+author: "Khalid Bouskou"
+date: "11/19/2021"
+---
+
+## Load Library
+This section to load library i need for my case study .
+
+```{r}
+library(tidyverse)
+library(lubridate)
+```
+## Load Raw Dataset
+This chunk for loading all data file in csv i need .
+
+```{r}
+M2020_11 <- read.csv("C:/Users/KasiolEr/Desktop/CSV/M2020_11.csv")
+M2020_12 <- read.csv("C:/Users/KasiolEr/Desktop/CSV/M2020_12.csv")
+M2021_01 <- read.csv("C:/Users/KasiolEr/Desktop/CSV/M2021_01.csv")
+M2021_02 <- read.csv("C:/Users/KasiolEr/Desktop/CSV/M2021_02.csv")
+M2021_03 <- read.csv("C:/Users/KasiolEr/Desktop/CSV/M2021_03.csv")
+M2021_04 <- read.csv("C:/Users/KasiolEr/Desktop/CSV/M2021_04.csv")
+M2021_05 <- read.csv("C:/Users/KasiolEr/Desktop/CSV/M2021_05.csv")
+M2021_06 <- read.csv("C:/Users/KasiolEr/Desktop/CSV/M2021_06.csv")
+M2021_07 <- read.csv("C:/Users/KasiolEr/Desktop/CSV/M2021_07.csv")
+M2021_08 <- read.csv("C:/Users/KasiolEr/Desktop/CSV/M2021_08.csv")
+M2021_09 <- read.csv("C:/Users/KasiolEr/Desktop/CSV/M2021_09.csv")
+M2021_10 <- read.csv("C:/Users/KasiolEr/Desktop/CSV/M2021_10.csv")
+```
+## Checking Dataset
+This chunk for checking data types and names of variables and dimensions of every dataset .
+```{r echo=FALSE}
+str(M2020_11)
+str(M2020_12)
+str(M2021_01)
+str(M2021_02)
+str(M2021_03)
+str(M2021_04)
+str(M2021_05)
+str(M2021_06)
+str(M2021_07)
+str(M2021_08)
+str(M2021_09)
+str(M2021_10)
+```
+
+
+## Convert data type 
+after checking each dataset I find that the first dataset M2020_11
+have two variable doesn't match two other dataset left 
+and this two variable are 'start_station_id' and 'end_station_id' by default they are in numeric so i run this chunk to convert it to charachter for mergin it in the next step .
+```{r}
+M2020_11 <- mutate(M2020_11, start_station_id = as.character(start_station_id))
+M2020_11 <- mutate(M2020_11, end_station_id = as.character(end_station_id))
+
+```
+
+
+## Combine 3 dataset into the 1 quarter 
+I use R to combine dataset monthly into quarter year
+My machine excel software can't handle merging many dataset into one .
+
+```{r}
+##
+Q1 <- bind_rows(M2020_11, M2020_12, M2021_01)
+Q2 <- bind_rows(M2021_02, M2021_03, M2021_04)
+Q3 <- bind_rows(M2021_05, M2021_06, M2021_07)
+Q4 <- bind_rows(M2021_08, M2021_09, M2021_10)
+
+## Export quarter dataset as csv file .
+#Note : row.names parameter in False they not add a new column for names as 'X' .
+
+write.csv(Q1, "C:/Users/KasiolEr/Desktop/Q1.csv", row.names = FALSE)
+write.csv(Q2, "C:/Users/KasiolEr/Desktop/Q2.csv", row.names = FALSE)
+write.csv(Q2, "C:/Users/KasiolEr/Desktop/Q2.csv", row.names = FALSE)
+write.csv(Q2, "C:/Users/KasiolEr/Desktop/Q2.csv", row.names = FALSE)
+
+```
+
+
+
+## Load Dataset
+This section to load data from local machine
+Note : Make sure you change the name of your machine before load the data 
+```{r}
+Q1 <- read.csv("C:/Users/KasiolEr/Desktop/Q1.csv")
+Q2 <- read.csv("C:/Users/KasiolEr/Desktop/Q2.csv")
+Q3 <- read.csv("C:/Users/KasiolEr/Desktop/Q3.csv")
+Q4 <- read.csv("C:/Users/KasiolEr/Desktop/Q4.csv")
+
+## This code to merge all quarter period into a year .
+annual_data <- bind_rows(Q1, Q2, Q3, Q4)
+
+## Export annual dataset as csv file .
+write.csv(annual_data, "C:/Users/KasiolEr/Desktop/annual.csv", row.names = FALSE)
+```
+
+## Check the new dataset 
+
+```{r}
+## This chunk for checking our new dataset consistency and interoperability .
+table(Q1$rideable_type, Q1$member_casual)
+table(Q2$rideable_type, Q2$member_casual)
+table(Q3$rideable_type, Q3$member_casual)
+table(Q4$rideable_type, Q4$member_casual)
+table(annual_data$rideable_type, annual_data$member_casual)
+
+## This code to making a copy of annual data  for further analysis .
+annual_v2 <- annual_data
+```
+
+
+
+## Descriptive analysis
+This section for processing calculation and analysis to the annual data
+
+```{r}
+## This chunk for geting summary of ride_length variable only .
+summary(annual_v2$ride_length)
+```
+```{r}
+## This chunk for aggregate to variable and get ther summary .
+aggregate(annual_v2$ride_length ~ annual_v2$member_casual, FUN = mean)
+aggregate(annual_v2$ride_length ~ annual_v2$member_casual, FUN = median)
+aggregate(annual_v2$ride_length ~ annual_v2$member_casual, FUN = max)
+aggregate(annual_v2$ride_length ~ annual_v2$member_casual, FUN = min)
+aggregate(annual_v2$ride_length ~ annual_v2$member_casual + annual_v2$day_of_week, FUN = mean)
+```
+
+## Create Visualization
+
+```{r}
+## This chunk to create a viz of rides number by rider type .
+annual_v2 %>%
+  mutate(weekday = wday(started_at, label = TRUE)) %>%
+  group_by(member_casual, weekday) %>%
+  summarise(number_of_rides = n(),average_duration = mean(ride_length)) %>%
+  arrange(member_casual, weekday) %>%
+  ggplot(mapping = aes(x = weekday, y = number_of_rides, fill = member_casual)) + geom_col(position = "dodge")
+```
+```{r}
+## This chunk to create a viz for average duration .
+annual_v2 %>%
+  mutate(weekday = wday(started_at, label = TRUE)) %>%
+  group_by(member_casual, weekday) %>%
+  summarise(number_of_rides = n() ,average_duration = mean(ride_length)) %>%
+  arrange(member_casual, weekday) %>%
+  ggplot(mapping = aes(x = weekday, y = average_duration, fill = member_casual)) + geom_col(position = "dodge")
+```
+## Export Summary
+```{r}
+## This chunk for export the summary as csv file .
+## Note : row.names parameter in False they not add a new column for names as 'X'
+counts <- aggregate(annual_v2$ride_length ~ annual_v2$member_casual + annual_v2$day_of_week, FUN = mean)
+write.csv(counts, "C:/Users/KasiolEr/Desktop/avg_ride_length.csv", row.names = FALSE)
+```
+
