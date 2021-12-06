@@ -1,4 +1,4 @@
--- Data definition language (DDL)
+-- Data Definition Language (DDL)
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -20,7 +20,7 @@ GO
 
 -- Drop all null value from table 
 DELETE FROM Real_Time_Traffic_Incident_Reports
-WHERE Issue_Reported is null
+WHERE Issue_Reported IS NULL
 
 
 -- Add Day_Of_Week column 
@@ -45,7 +45,6 @@ ORDER BY Number_Of_Accident DESC
 SELECT Issue_Reported,
        COUNT(Issue_Reported) AS Number_of_accident,
       DATENAME(DW, Day_Of_Week) AS Day_of_Accident
-
 FROM Real_Time_Traffic_Incident_Reports
 GROUP BY Issue_Reported, DATENAME(DW, Day_Of_Week)
 ORDER BY Issue_Reported
