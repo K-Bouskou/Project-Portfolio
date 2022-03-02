@@ -26,6 +26,7 @@ SELECT case_number, COUNT(*) AS 'Number Of Duplicates'
 FROM [Data]
 GROUP BY case_number
 HAVING COUNT(*) >1
+ORDER BY [Number Of Duplicates] DESC
 
 -- Drop Duplicates in case_number Column .
 
