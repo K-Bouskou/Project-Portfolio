@@ -55,6 +55,13 @@ UPDATE [Data]
 
 -- Split Date Into Time, Days, Months and Years . 
 
+-- 
+ALTER TABLE Data 
+ADD [Date] DATETIME
+-- Extract Date from date column in varchar.
+UPDATE Data
+SET [Date] = SUBSTRING(old_date, 1, 16)
+
 -- Create Day Column and Extract Day from Date Column .
 ALTER TABLE [Data]
     ADD [Day] AS DATENAME(DAY, [date])
